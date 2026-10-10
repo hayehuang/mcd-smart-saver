@@ -73,7 +73,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/your-username/mcd-smart-saver.git
+git clone https://github.com/hayehuang/mcd-smart-saver.git
 cd mcd-smart-saver
 
 # 安装必要依赖
