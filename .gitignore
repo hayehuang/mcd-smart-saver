@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Environment & Sensitive Tokens
+.env
+*.token
+mcp-config.json
+!mcp-config.example.json
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs & Temp files
+*.log
+scratch/
+mcp_readme.md
+challenge_readme.md
