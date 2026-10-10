@@ -48,14 +48,26 @@ class McDonaldMCPClient:
 
         try:
             resp = self.session.post(
-                f"{self.base_url}/mcp",
+                self.base_url,
                 json=payload,
                 timeout=REQUEST_TIMEOUT
             )
             if resp.status_code == 200:
                 data = resp.json()
                 if "result" in data:
-                    return data["result"]
+                    res = data["result"]
+                    content = res.get("content", [])
+                    if content and isinstance(content, list) and "text" in content[0]:
+                        raw_text = content[0]["text"]
+                        if tool_name == "auto-bind-coupons":
+                            # 提取首行摘要
+                            first_line = raw_text.splitlines()[0] if raw_text else "成功领取麦麦省优惠券"
+                            return {"success": True, "message": raw_text.strip(), "raw": res}
+                        try:
+                            return json.loads(raw_text)
+                        except Exception:
+                            return {"success": True, "text": raw_text, "raw": res}
+                    return res
                 elif "error" in data:
                     logger.warning(f"MCP Tool {tool_name} returned error: {data['error']}, falling back to mock")
                     return self._mock_tool_dispatch(tool_name, arguments or {})
@@ -146,9 +158,19 @@ class McDonaldMCPClient:
         return res.get("coupons", [])
 
     def query_meals(self, store_id: str = "DEFAULT") -> List[Dict[str, Any]]:
-        """查询在售餐品清单"""
-        res = self._call_mcp_tool("query-meals", {"store_id": store_id})
-        return res.get("meals", [])
+        """查询在售餐品清单，支持真实与仿真菜单回退"""
+        if self.is_demo or store_id == "DEFAULT":
+            return MOCK_MEALS
+        try:
+            res = self._call_mcp_tool("query-meals", {
+                "storeCode": store_id,
+                "orderType": 1,
+                "beType": 1
+            })
+            meals = res.get("meals", [])
+            return meals if meals else MOCK_MEALS
+        except Exception:
+            return MOCK_MEALS
 
     def calculate_price(self, items: List[Dict[str, Any]], coupon_ids: List[str]) -> Dict[str, Any]:
         """官方服务端验价与金额核算"""

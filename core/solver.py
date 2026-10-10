@@ -7,7 +7,7 @@
 """
 from typing import List, Dict, Any, Optional
 from client.mcp_client import McDonaldMCPClient
-from client.mock_data import COMBO_1PLUS1_PRICE
+from client.mock_data import COMBO_1PLUS1_PRICE, MOCK_MEALS, MOCK_COUPONS
 from core.coupon_manager import CouponManager
 
 
@@ -19,8 +19,8 @@ class SmartSaverSolver:
         self.store_id = store_id
 
         # 初始化数据
-        self.meals = self.client.query_meals(store_id)
-        raw_coupons = self.client.query_coupons()
+        self.meals = self.client.query_meals(store_id) or MOCK_MEALS
+        raw_coupons = self.client.query_coupons() or MOCK_COUPONS
         self.coupon_mgr = CouponManager(raw_coupons)
 
     def solve(self, mode: str = "budget_friendly", target_budget: float = 25.0) -> Dict[str, Any]:
